@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Manage Order — {{ order.order_number }}</h2>
+
+    <div class="card p-3 mb-4">
+        <h4>Customer Info</h4>
+        <p><strong>Name:</strong> {{ order.full_name }}</p>
+        <p><strong>Phone:</strong> {{ order.phone }}</p>
+        <p><strong>Email:</strong> {{ order.email }}</p>
+        <p><strong>Address:</strong> {{ order.full_address }}</p>
+        <p><strong>Status:</strong>
+            <span class="badge bg-info">{{ order.status }}</span>
+        </p>
+    </div>
+
+    <div class="card p-3 mb-4">
+        <h4>Order Products</h4>
+        <table class="table table-bordered">
+            <thead class="bg-secondary text-white">
+                <tr>
+                    <th>#</th>
+                    <th>Product</th>
+                    <th>Qty</th>
+                    <th>Price</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for p in products %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ p.product.product_name }}</td>
+                    <td>{{ p.quantity }}</td>
+                    <td>{{ p.product_price }} ৳</td>
+                    <td>{{ p.sub_total }} ৳</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card p-3">
+        <h4>Update Order Status</h4>
+
+        <select id="order_status" class="form-control mb-3">
+            <option value="New" {% if order.status == "New" %}selected{% endif %}>New</option>
+            <option value="Accepted" {% if order.status == "Accepted" %}selected{% endif %}>Accepted</option>
+            <option value="Completed" {% if order.status == "Completed" %}selected{% endif %}>Completed</option>
+            <option value="Cancelled" {% if order.status == "Cancelled" %}selected{% endif %}>Cancelled</option>
+            <option value="Refunded" {% if order.status == "Refunded" %}selected{% endif %}>Refunded</option>
+        </select>
+
+        <button class="btn btn-success" onclick="updateStatus()">Update</button>
+
+        <p id="msg" class="mt-3"></p>
+    </div>
+</div>
+
+<script>
+function updateStatus() {
+    var status = document.getElementById("order_status").value;
+
+    fetch("{% url 'update_order_status' %}", {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": "{{ csrf_token }}",
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: "order_number={{ order.order_number }}&status=" + status
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById("msg").innerHTML = data.message;
+        document.getElementById("msg").style.color = data.success ? "green" : "red";
+    });
+}
+</script>
+
+{% endblock %}

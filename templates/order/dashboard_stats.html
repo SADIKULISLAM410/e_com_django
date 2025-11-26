@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+    <h2>Sales Dashboard</h2>
+    <hr>
+
+    <canvas id="salesChart" height="100"></canvas>
+    <canvas id="orderChart" class="mt-5" height="100"></canvas>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+(function() {
+    const months = {{ months|tojson }};
+    const salesTotals = {{ totals|tojson }};
+    const orderCounts = {{ order_counts|tojson }};
+
+    // SALES LINE CHART
+    new Chart(document.getElementById("salesChart"), {
+        type: 'line',
+        data: {
+            labels: months,
+            datasets: [{
+                label: "Monthly Sales (৳)",
+                data: salesTotals,
+                borderWidth: 3,
+                borderColor: "#28a745",
+                fill: true,
+                backgroundColor: "rgba(40, 167, 69, 0.1)"
+            }]
+        }
+    });
+
+    // ORDER COUNT BAR CHART
+    new Chart(document.getElementById("orderChart"), {
+        type: 'bar',
+        data: {
+            labels: months,
+            datasets: [{
+                label: "Orders Count",
+                data: orderCounts,
+                backgroundColor: "#007bff",
+            }]
+        }
+    });
+})();
+</script>
+
+{% endblock %}

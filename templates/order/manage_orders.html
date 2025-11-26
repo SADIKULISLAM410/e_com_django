@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+
+    <form method="GET" class="row g-2 mb-4">
+        <div class="col-md-3">
+            <input type="text" name="search" placeholder="Search Orders..." 
+                value="{{ request.GET.search }}" class="form-control">
+        </div>
+
+        <div class="col-md-2">
+            <select name="status" class="form-select">
+                <option value="All">All Status</option>
+                <option value="New">New</option>
+                <option value="Accepted">Accepted</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+                <option value="Refunded">Refunded</option>
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <input type="date" name="date_from" class="form-control"
+                value="{{ request.GET.date_from }}">
+        </div>
+
+        <div class="col-md-2">
+            <input type="date" name="date_to" class="form-control"
+                value="{{ request.GET.date_to }}">
+        </div>
+
+        <div class="col-md-1">
+            <button class="btn btn-primary w-100">Filter</button>
+        </div>
+
+        <div class="col-md-2">
+            <a href="{% url 'export_orders_csv' %}" class="btn btn-success w-100">Export CSV</a>
+        </div>
+        <div class="col-md-2 mt-2">
+            <a href="{% url 'export_orders_excel' %}" class="btn btn-info w-100 text-white">Export Excel</a>
+        </div>
+
+    </form>
+
+</div>
+{% endblock %}

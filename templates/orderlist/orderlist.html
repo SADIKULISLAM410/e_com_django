@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+.table thead th { white-space: nowrap; }
+.filter-box { background: #f8f9fa; padding: 15px; border-radius: 6px; }
+</style>
+
+<div class="container my-4">
+
+    <h2 class="text-center mb-4">📦 Order List</h2>
+
+    <!-- Filters -->
+    <div class="filter-box mb-4">
+        <form method="GET">
+            <div class="row g-3">
+
+                <div class="col-md-3">
+                    <label class="form-label">Search Order</label>
+                    <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Order Number">
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-control">
+                        <option value="">All</option>
+                        <option value="New" {% if status_filter == "New" %}selected{% endif %}>New</option>
+                        <option value="Accepted" {% if status_filter == "Accepted" %}selected{% endif %}>Accepted</option>
+                        <option value="Completed" {% if status_filter == "Completed" %}selected{% endif %}>Completed</option>
+                        <option value="Cancelled" {% if status_filter == "Cancelled" %}selected{% endif %}>Cancelled</option>
+                        <option value="Refunded" {% if status_filter == "Refunded" %}selected{% endif %}>Refunded</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Date From</label>
+                    <input type="date" name="date_from" class="form-control" value="{{ date_from }}">
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Date To</label>
+                    <input type="date" name="date_to" class="form-control" value="{{ date_to }}">
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end">
+                    <button class="btn btn-primary w-100">Filter</button>
+                </div>
+
+            </div>
+        </form>
+    </div>
+
+    <!-- Order Table -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped text-center">
+            <thead class="table-dark">
+                <tr>
+                    <th>Order No</th>
+                    <th>User</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Payment</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>{{ order.order_number }}</td>
+                    <td>{{ order.full_name }}</td>
+                    <td>{{ order.grand_total }} Tk</td>
+                    <td><span class="badge bg-success">{{ order.status }}</span></td>
+                    <td>{{ order.created_at|date:"d M, Y h:i A" }}</td>
+                    <td>{{ order.payment.payment_method|title }}</td>
+                    <td>
+                        <a href="{% url 'order_detail' order.order_number %}" class="btn btn-sm btn-primary">View</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center">No orders found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <nav>
+        <ul class="pagination justify-content-center">
+            {% if orders.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ orders.previous_page_number }}&search={{ search_query }}&status={{ status_filter }}&date_from={{ date_from }}&date_to={{ date_to }}">Previous</a></li>
+            {% endif %}
+
+            {% for num in orders.paginator.page_range %}
+                {% if orders.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% else %}
+                    <li class="page-item"><a class="page-link" href="?page={{ num }}&search={{ search_query }}&status={{ status_filter }}&date_from={{ date_from }}&date_to={{ date_to }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if orders.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ orders.next_page_number }}&search={{ search_query }}&status={{ status_filter }}&date_from={{ date_from }}&date_to={{ date_to }}">Next</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+</div>
+
+{% endblock %}

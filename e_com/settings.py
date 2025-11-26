@@ -79,8 +79,6 @@ INSTALLED_APPS = [
     'order',
     'Coupon',
     'payment',
-    'ckeditor',
-    'ckeditor_uploader',
     'bestdeal',
     'flashsale',
     'wishlist',
@@ -247,7 +245,7 @@ EMAIL_PORT = 587  # Port 587 is used for TLS
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False 
 EMAIL_HOST_USER = 'sadikislam410@gmail.com'  # Your Gmail email address
-EMAIL_HOST_PASSWORD = 'mwen usnp gcjj szlg' #Use the App Password generated whice create in google account 
+EMAIL_HOST_PASSWORD = 'wikt sdqy bwzy xehw' #Use the App Password generated whice create in google account 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # For Social Auth and Normal Login Redirects

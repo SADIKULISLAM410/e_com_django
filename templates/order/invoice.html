@@ -1,151 +1,151 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <title>{% if order %}Tax Invoice{% else %}Proforma Invoice{% endif %}</title>
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice {{ order.order_number }}</title>
+
     <style>
-
-      body{font-family: sans-serif; font-size:12px; color:#111;}
-      .header{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;}
-      .muted{color:#666;}
-      h1{font-size:20px; margin:0 0 6px;}
-      table{width:100%; border-collapse:collapse; margin-top:10px;}
-      th,td{border:1px solid #ddd; padding:8px; vertical-align:top;}
-      th{background:#f5f5f5; text-align:left;}
-      .right{text-align:right;}
-      .totals{width:40%; margin-left:auto; border:1px solid #ddd;}
-      .totals td,.totals th{border:1px solid #ddd;}
-      small{font-size:11px;}
-      .meta{font-size:12px; line-height:1.4;}
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .invoice-box {
+            width: 100%;
+            padding: 25px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ddd;
+        }
+        .section-title {
+            font-weight: bold;
+            font-size: 18px;
+            margin-top: 20px;
+            margin-bottom: 8px;
+            color: #0056b3;
+        }
+        .info-box {
+            background: #f7f7f7;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        table th {
+            background: #0056b3;
+            color: #fff;
+            padding: 10px;
+            text-align: left;
+        }
+        table td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .total-box {
+            margin-top: 20px;
+            float: right;
+            width: 300px;
+        }
+        .total-box table td {
+            border: none;
+            padding: 6px;
+            font-size: 16px;
+        }
+        .grand {
+            font-weight: bold;
+            border-top: 2px solid #333;
+            font-size: 18px;
+        }
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 13px;
+            color: #666;
+        }
     </style>
-  </head>
-  <body>
-    <div class="header">
-      <div>
-        <h1>{% if order %}Tax Invoice{% else %}Proforma Invoice{% endif %}</h1>
-        <div class="muted">Generated at: {{ generated_at|default:now|date:"Y-m-d H:i" }}</div>
-        {% if order %}
-          <div class="meta">
-            <strong>Invoice No:</strong> {{ order.order_number }}<br>
-            <strong>Order Date:</strong> {{ order.created_at|date:"Y-m-d H:i" }}
-          </div>
-        {% endif %}
-      </div>
-      <div>
-        <strong>Bill To</strong><br>
-        {% if billing %}
-          {{ billing.first_name }} {{ billing.last_name }}<br>
-          {{ billing.address_line_1 }}{% if billing.address_line_2 %}, {{ billing.address_line_2 }}{% endif %}<br>
-          {{ billing.city }}, {{ billing.state }}, {{ billing.country }}<br>
-          Phone: {{ billing.phone }} • Email: {{ billing.email }}
-        {% else %}
-          {{ order.first_name }} {{ order.last_name }}<br>
-          {{ order.address_line_1 }}{% if order.address_line_2 %}, {{ order.address_line_2 }}{% endif %}<br>
-          {{ order.city }}, {{ order.state }}, {{ order.country }}<br>
-          Phone: {{ order.phone }} • Email: {{ order.email }}
-        {% endif %}
-      </div>
-    </div>
-    {% if order %}
-      <table>
-        <thead>
-          <tr>
-            <th>Product</th>
-            <th>Details</th>
-            <th class="right">Qty</th>
-            <th class="right">Unit Price</th>
-            <th class="right">Line Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for item in order_products %}
-            <tr>
-              <td><strong>{{ item.product.product_name }}</strong></td>
-              <td>
-                {% if item.variations.all %}
-                  <small class="muted">
-                    {% for v in item.variations.all %}
-                      {{ v.variation_category }}: {{ v.variation_value }}{% if not forloop.last %}, {% endif %}
-                    {% endfor %}
-                  </small>
-                {% else %}
-                  <small class="muted">No variations</small>
-                {% endif %}
-              </td>
-              <td class="right">{{ item.quantity }}</td>
-              <td class="right">{{ item.product_price|floatformat:2 }} Tk</td>
-              <td class="right">{{ item.get_total|default:item.product_price|mul:item.quantity|floatformat:2 }} Tk</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      <p class="meta">
-        <strong>Payment Method:</strong> {{ payment.payment_method|title }} |
-        <strong>Status:</strong> {{ payment.status|title }}
-        {% if payment.transaction_id %}| <strong>Txn ID:</strong> {{ payment.transaction_id }}{% endif %}
-      </p>
-    {% else %}
-      <table>
-        <thead>
-          <tr>
-            <th>Product</th>
-            <th>Details</th>
-            <th class="right">Qty</th>
-            <th class="right">Unit Price</th>
-            <th class="right">Line Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for item in cart_items %}
-            <tr>
-              <td><strong>{{ item.product.product_name }}</strong></td>
-              <td>
-                {% if item.variations.all %}
-                  <small class="muted">
-                    {% for v in item.variations.all %}
-                      {{ v.variation_category }}: {{ v.variation_value }}{% if not forloop.last %}, {% endif %}
-                    {% endfor %}
-                  </small>
-                {% else %}
-                  <small class="muted">No variations</small>
-                {% endif %}
-              </td>
-              <td class="right">{{ item.quantity }}</td>
-              <td class="right">{{ item.product.price|floatformat:2 }} Tk</td>
-              <td class="right">{{ item.sub_total|floatformat:2 }} Tk</td>
-            </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      {% if billing.order_note %}
-        <p><strong>Order Note:</strong> {{ billing.order_note }}</p>
-      {% endif %}
-      <p class="muted"><small>This is a proforma invoice generated from your cart. Final invoice will be issued upon order confirmation.</small></p>
+</head>
 
-    {% endif %}
-    <table class="totals" style="margin-top:12px;">
-      <tr>
-        <th>Subtotal</th>
-        <td class="right">{{ total|default:order.order_total|floatformat:2 }} Tk</td>
-      </tr>
-      <tr>
-        <th>VAT (1%)</th>
-        <td class="right">{{ vat|default:order.tax|floatformat:2 }} Tk</td>
-      </tr>
-      <tr>
-        <th>Delivery Charge</th>
-        <td class="right">{{ delivery_charge|default:order.delivery_charge|floatformat:2 }} Tk</td>
-      </tr>
-      {% if discount_amount|default:order.discount %}
-        <tr>
-          <th>Discount{% if coupon_code %} ({{ coupon_code }}){% endif %}</th>
-          <td class="right">-{{ discount_amount|default:order.discount|floatformat:2 }} Tk</td>
-        </tr>
-      {% endif %}
-      <tr>
-        <th>Total</th>
-        <td class="right"><strong>{{ total_price|default:order.grand_total|floatformat:2 }} Tk</strong></td>
-      </tr>
-    </table>
-  </body>
+<body>
+    <div class="invoice-box">
+        <h2>INVOICE</h2>
+
+        <div class="section-title">Order Information</div>
+        <div class="info-box">
+            <strong>Order No:</strong> {{ order.order_number }} <br>
+            <strong>Date:</strong> {{ order.created_at|date:"d M Y, h:i A" }} <br>
+            <strong>Payment Method:</strong> {{ payment.payment_method|title }}
+        </div>
+
+        <div class="section-title">Billing Details</div>
+        <div class="info-box">
+            <strong>Name:</strong> {{ order.full_name }} <br>
+            <strong>Phone:</strong> {{ order.phone }} <br>
+            <strong>Email:</strong> {{ order.email }} <br>
+            <strong>Address:</strong> {{ order.address_line_1 }}, {{ order.city }}, {{ order.state }}
+        </div>
+
+        <div class="section-title">Products</div>
+
+        <table>
+            <tr>
+                <th>Product</th>
+                <th>Qty</th>
+                <th>Unit Price</th>
+                <th>Total</th>
+            </tr>
+
+            {% for item in order_products %}
+            <tr>
+                <td>{{ item.product.product_name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.product_price }} ৳</td>
+                <td>{{ item.sub_total }} ৳</td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <div class="total-box">
+            <table>
+                <tr>
+                    <td>Subtotal:</td>
+                    <td>{{ total }} TK</td>
+                </tr>
+                <tr>
+                    <td>VAT (1%):</td>
+                    <td>{{ vat }} TK</td>
+                </tr>
+                <tr>
+                    <td>Delivery Charge:</td>
+                    <td>{{ delivery_charge }} TK</td>
+                </tr>
+                <tr>
+                    <td>Discount:</td>
+                    <td>{{ discount_amount }} TK</td>
+                </tr>
+                <tr class="grand">
+                    <td>Grand Total:</td>
+                    <td>{{ total_price }} TK</td>
+                </tr>
+            </table>
+        </div>
+
+        <div style="clear: both;"></div>
+
+        <div class="footer">
+            Thank you for ordering from us!  
+            <br>  
+      
+        </div>
+    </div>
+</body>
 </html>

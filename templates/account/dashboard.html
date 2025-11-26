@@ -1,98 +1,147 @@
-{% extends 'base.html' %}
-
-{% block content %}
-  <section class="section-conten padding-y bg">
-
-    <!-- {% include 'footer/alarts.html' %} -->
-    <div class="container">
-        <div class="row">
-            {% include 'footer/alarts.html' %}
-            <aside class="col-md-3">
-                <!--   SIDEBAR   -->
-                <ul class="list-group">
-                    <a class="list-group-item active" href="#"> My order history </a>
-                    <a class="list-group-item" href="#"> Transactions </a>
-			        <a class="list-group-item" href="#"> Return and refunds </a>
-			        <a class="list-group-item" href="#">Settings </a>
-			        <a class="list-group-item" href="#"> My Selling Items </a>
-			        <a class="list-group-item" href="#"> Received orders </a>
-                </ul>
-                <br>
-                <a class="btn btn-light btn-block" href="{% url 'logout' %}"> <i class="fa fa-power-off"></i> <span class="text">Log out</span> </a> 
-		<!--   SIDEBAR .//END   -->
-	        </aside>
-            <main class="col-md-9">
-                <article class="card">
-                    <header class="card-header">
-			            <strong class="d-inline-block mr-3">Order ID: 6123456789</strong>
-			            <span>Order Date: 16 December 2018</span>
-		            </header>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-8">
-                                <h6 class="text-muted">Delivery to</h6>
-                                <p>Michael Jackson<br>
-                                    Phone +1234567890 Email: myname@pixsellz.com <br>
-			    	                Location: Home number, Building name, Street 123,  Tashkent, UZB <br> 
-			    	                P.O. Box: 100123
-                                </p>
-                            </div>
-                            <div class="col-md-4">
-                                <h6 class="text-muted">Payment</h6>
-                                <span class="text-success">
-                                    <i class="fab fa-lg fa-cc-visa"></i>
-                                    Visa  **** 4216 
-                                </span>
-                                <p>Subtotal: $300<br>
-                                    Shipping fee: $5<br>
-                                    <span class="b">Total:  $456 </span>
-                                </p>
-                            </div>
-                        </div>  <!-- row.// -->
-                    </div> <!-- card-body .// -->
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <tr>
-                                <td width="65">
-                                    <img src="../images/items/1.jpg" class="img-xs border">
-                                </td>
-                                <td> 
-                                    <p class="title mb-0">Product name goes here </p>
-                                    <var class="price text-muted">USD 145</var>
-                                </td>
-                                <td> Seller <br> Nike clothing </td>
-                                <td width="250"> <a href="#" class="btn btn-outline-primary">Track order</a> <a href="#" class="btn btn-light"> Details </a> </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <img src="../images/items/2.jpg" class="img-xs border">
-                                </td>
-                                <td>
-                                    <p class="title mb-0">Another name goes here </p>
-                                    <var class="price text-muted">USD 15</var>
-                                </td>
-
-                                <td> Seller <br> ABC shop </td>
-                                <td> <a href="#" class="btn btn-outline-primary">Track order</a> <a href="#" class="btn btn-light"> Details </a> </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <img src="../images/items/3.jpg" class="img-xs border">
-                                </td>
-                                <td> 
-                                    <p class="title mb-0">The name of the product  goes here </p>
-                                    <var class="price text-muted">USD 145</var>
-                                </td>
-                                <td> Seller <br> Wallmart </td>
-                                <td> <a href="#" class="btn btn-outline-primary">Track order</a> <a href="#" class="btn btn-light"> Details </a> </td>
-                            </tr>
-                        </table>
-                    </div><!-- table-responsive .end// -->
-                </article> <!-- order-group.// --> 
-            </main>
-        </div>  <!-- row.// -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-orange-50 min-h-screen">
+  <!-- HEADER -->
+  <header class="bg-[#FF6F00] text-white py-4 shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 flex justify-between items-center">
+      <h1 class="text-2xl font-bold">Dashboard</h1>
+      <a href="/account/profile" class="px-3 py-1 rounded bg-white text-orange-700 text-sm shadow">My Profile</a>
     </div>
-  </section>
-  <!-- ========================= SECTION CONTENT END// ========================= -->
+  </header>
 
-{% endblock  %}
+  <!-- MAIN -->
+  <div class="max-w-7xl mx-auto px-4 mt-8 pb-12">
+    
+    <!-- STATS GRID -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="bg-white p-6 rounded-xl shadow border border-orange-200">
+        <h3 class="text-lg font-semibold text-gray-700">Total Orders</h3>
+        <p class="text-3xl font-bold text-orange-600 mt-2">12</p>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl shadow border border-orange-200">
+        <h3 class="text-lg font-semibold text-gray-700">Pending Orders</h3>
+        <p class="text-3xl font-bold text-orange-600 mt-2">3</p>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl shadow border border-orange-200">
+        <h3 class="text-lg font-semibold text-gray-700">Delivered</h3>
+        <p class="text-3xl font-bold text-orange-600 mt-2">9</p>
+      </div>
+    </div>
+
+    <!-- GRID WITH SIDEBAR + CONTENT -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+
+      <!-- SIDEBAR -->
+      <aside class="bg-white p-5 rounded-xl shadow border border-orange-200 h-fit">
+        <h3 class="text-lg font-semibold mb-4 text-gray-700">Menu</h3>
+        <ul class="space-y-3">
+          <li>
+            <a href="#" class="block px-4 py-2 bg-orange-100 text-orange-700 rounded-lg">My Orders</a>
+          </li>
+          <li>
+            <a href="#" class="block px-4 py-2 hover:bg-orange-100 rounded-lg">Transactions</a>
+          </li>
+          <li>
+            <a href="#" class="block px-4 py-2 hover:bg-orange-100 rounded-lg">Refunds</a>
+          </li>
+          <li>
+            <a href="#" class="block px-4 py-2 hover:bg-orange-100 rounded-lg">Settings</a>
+          </li>
+          <li>
+            <a href="/account/logout" class="block px-4 py-2 bg-red-100 text-red-600 rounded-lg">Logout</a>
+          </li>
+        </ul>
+      </aside>
+
+      <!-- MAIN CONTENT -->
+      <section class="md:col-span-3 space-y-6">
+
+        <!-- RECENT ORDERS CARD -->
+        <div class="bg-white p-6 rounded-xl shadow border border-orange-200">
+          <h2 class="text-xl font-bold text-gray-800 mb-4">Recent Orders</h2>
+
+          <div class="overflow-x-auto">
+            <table class="table-auto w-full border-collapse">
+              <thead class="bg-orange-100 text-gray-700">
+                <tr>
+                  <th class="p-3 text-left">Order ID</th>
+                  <th class="p-3 text-left">Date</th>
+                  <th class="p-3 text-left">Total</th>
+                  <th class="p-3 text-left">Status</th>
+                  <th class="p-3 text-left">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-b hover:bg-orange-50">
+                  <td class="p-3">#1001</td>
+                  <td class="p-3">25 Nov 2025</td>
+                  <td class="p-3">$120</td>
+                  <td class="p-3"><span class="px-3 py-1 bg-yellow-200 text-yellow-700 rounded">Pending</span></td>
+                  <td class="p-3"><a href="#" class="text-orange-600 hover:underline">Details</a></td>
+                </tr>
+
+                <tr class="border-b hover:bg-orange-50">
+                  <td class="p-3">#1000</td>
+                  <td class="p-3">20 Nov 2025</td>
+                  <td class="p-3">$95</td>
+                  <td class="p-3"><span class="px-3 py-1 bg-green-200 text-green-700 rounded">Delivered</span></td>
+                  <td class="p-3"><a href="#" class="text-orange-600 hover:underline">Details</a></td>
+                </tr>
+
+                <tr class="border-b hover:bg-orange-50">
+                  <td class="p-3">#0999</td>
+                  <td class="p-3">18 Nov 2025</td>
+                  <td class="p-3">$60</td>
+                  <td class="p-3"><span class="px-3 py-1 bg-green-200 text-green-700 rounded">Delivered</span></td>
+                  <td class="p-3"><a href="#" class="text-orange-600 hover:underline">Details</a></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- RECOMMENDATIONS -->
+        <div class="bg-white p-6 rounded-xl shadow border border-orange-200">
+          <h2 class="text-xl font-bold text-gray-800 mb-4">Recommended for You</h2>
+
+          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div class="bg-white border rounded-lg shadow hover:shadow-lg transition p-3">
+              <img src="https://via.placeholder.com/150" class="rounded-lg mb-2" />
+              <p class="font-semibold text-gray-700">Product Name</p>
+              <p class="text-orange-600 font-bold">$20</p>
+            </div>
+
+            <div class="bg-white border rounded-lg shadow hover:shadow-lg transition p-3">
+              <img src="https://via.placeholder.com/150" class="rounded-lg mb-2" />
+              <p class="font-semibold text-gray-700">Product Name</p>
+              <p class="text-orange-600 font-bold">$35</p>
+            </div>
+
+            <div class="bg-white border rounded-lg shadow hover:shadow-lg transition p-3">
+              <img src="https://via.placeholder.com/150" class="rounded-lg mb-2" />
+              <p class="font-semibold text-gray-700">Product Name</p>
+              <p class="text-orange-600 font-bold">$12</p>
+            </div>
+
+            <div class="bg-white border rounded-lg shadow hover:shadow-lg transition p-3">
+              <img src="https://via.placeholder.com/150" class="rounded-lg mb-2" />
+              <p class="font-semibold text-gray-700">Product Name</p>
+              <p class="text-orange-600 font-bold">$89</p>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </div>
+  </div>
+
+</body>
+</html>

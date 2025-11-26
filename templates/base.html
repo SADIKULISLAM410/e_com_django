@@ -56,9 +56,28 @@ $(document).ready(function() {
 <!-- navbar section in base.html -->
 {% endblock navbar %}
 
+
 {% block content %}
-	<!--content -->
-{% endblock content %}
+  <li class="nav-item">
+	<a class="nav-link" href="{% url 'order_list' %}">
+
+		<i class="fas fa-list"></i> My Orders
+	</a>
+  </li>
+  {% if user.is_superuser %}
+	<li class="nav-item dropdown">
+		<a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown">
+        	<i class="fas fa-cog"></i> Admin
+    	</a>
+		<ul class="dropdown-menu">
+			<li><a class="dropdown-item" href="{% url 'order_list' %}">All Orders</a></li>
+			<li><a class="dropdown-item" href="/admin/">Admin Panel</a></li>
+    	</ul>
+	</li>
+  {% endif %}
+
+{% endblock %}
+
 
 	<!--footer -->
 {% block footer %}

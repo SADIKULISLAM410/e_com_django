@@ -14,6 +14,7 @@ urlpatterns = [
     path('coupon/', include("Coupon.urls")),
     path('payments/', include("payment.urls")),
     path('order/', include("order.urls")),
+    #path('orderlist/', include('orderlist.urls')),
     path('ckeditor/', include('ckeditor_uploader.urls')),
     path('reviews/', include('reviews.urls')),
     path('bestdeal', include('bestdeal.urls')),

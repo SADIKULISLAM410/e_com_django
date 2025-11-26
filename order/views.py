@@ -669,10 +669,10 @@
 
 
 
-
+from django.db.models.functions import TruncMonth
 from io import BytesIO
 from unittest import result
-
+from django.db.models import Sum, Count
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
@@ -692,7 +692,11 @@ from django.db import transaction
 from decimal import Decimal
 from django.conf import settings
 from datetime import datetime
-
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.db.models import Q
+import csv
+import openpyxl
+from openpyxl.styles import Font
 
 #  1. PLACE ORDER FUNCTION
 @login_required(login_url='login')
@@ -1017,6 +1021,37 @@ def invoice_cart_pdf(request):
 
         
 
+@login_required(login_url='login')
+def customer_summary(request, user_id):
+
+    customer = get_object_or_404(Account, id=user_id)
+    orders = Order.objects.filter(user=customer, is_ordered=True)
+
+    total_orders = orders.count()
+    total_spent = orders.aggregate(Sum("grand_total"))["grand_total__sum"] or 0
+    avg_order_value = total_spent / total_orders if total_orders > 0 else 0
+    last_order = orders.order_by('-created_at').first()
+
+    # Top products
+    order_products = (
+        OrderProduct.objects
+        .filter(user=customer)
+        .values("product__product_name")
+        .annotate(total_qty=Sum("quantity"))
+        .order_by("-total_qty")[:5]
+    )
+
+    context = {
+        "customer": customer,
+        "orders": orders,
+        "total_orders": total_orders,
+        "total_spent": total_spent,
+        "avg_order_value": avg_order_value,
+        "last_order": last_order,
+        "top_products": order_products,
+    }
+
+    return render(request, "order/customer_summary.html", context)
 
 
 
@@ -1152,7 +1187,9 @@ def download_cart_invoice(request):
 
 @login_required(login_url='login')
 def download_invoice(request, order_number):
-    order = get_object_or_404(Order, order_number=order_number, user=request.user, is_ordered=True)
+    #order = get_object_or_404(Order, order_number=order_number, user=request.user, is_ordered=True)
+    order = get_object_or_404(Order, order_number=order_number, is_ordered=True)
+
     order_products = OrderProduct.objects.filter(order=order)
 
     ctx = {
@@ -1173,3 +1210,266 @@ def download_invoice(request, order_number):
     filename = f"Invoice_{order.order_number}.pdf"
     return _render_pdf_from_html(request, 'order/invoice.html', ctx, filename)
 ##################
+
+
+#orderlist 20-11-2025
+@login_required(login_url='login')
+def order_list(request):
+    orders = Order.objects.filter(is_ordered=True).order_by('-created_at')
+    # Pagination
+    from django.core.paginator import Paginator
+
+    paginator = Paginator(orders, 10)  # in every 10 products in every page
+    page = request.GET.get('page')
+    paged_orders = paginator.get_page(page)
+
+    context = {
+        'orders': paged_orders
+    }
+    return render(request, 'order/order_list.html', context)
+@login_required(login_url='login')
+def manage_orders(request):
+
+    orders = Order.objects.filter(is_ordered=True).order_by('-created_at')
+
+    # SEARCH
+    query = request.GET.get('search')
+    if query:
+        orders = orders.filter(
+            Q(order_number__icontains=query) |
+            Q(first_name__icontains=query) |
+            Q(last_name__icontains=query) |
+            Q(phone__icontains=query) |
+            Q(email__icontains=query)
+        )
+
+    # STATUS FILTER
+    status = request.GET.get('status')
+    if status and status != "All":
+        orders = orders.filter(status=status)
+
+    # DATE FILTER
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
+
+    if date_from:
+        orders = orders.filter(created_at__date__gte=date_from)
+
+    if date_to:
+        orders = orders.filter(created_at__date__lte=date_to)
+
+    context = {
+        'orders': orders,
+    }
+    return render(request, 'order/manage_orders.html', context)
+
+
+@login_required(login_url='login')
+def update_order_status(request):
+    if request.method == "POST":
+        order_number = request.POST.get('order_number')
+        status = request.POST.get('status')
+
+        try:
+            order = Order.objects.get(order_number=order_number)
+            order.status = status
+            order.save()
+
+            return JsonResponse({'success': True, 'message': 'Order Status Updated Successfully'})
+        except Order.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Order Not Found'})
+
+    return JsonResponse({'success': False, 'message': 'Invalid Request'})
+
+@login_required(login_url='login')
+def manage_order_edit(request, order_number):
+    order = get_object_or_404(Order, order_number=order_number)
+    products = OrderProduct.objects.filter(order=order)
+
+    context = {
+        'order': order,
+        'products': products,
+    }
+    return render(request, 'order/manage_order_edit.html', context)
+
+@login_required(login_url='login')
+def export_orders_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="orders.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['Order Number', 'Name', 'Phone', 'Email', 'Total', 'Status', 'Date'])
+
+    orders = Order.objects.filter(is_ordered=True)
+
+    for order in orders:
+        writer.writerow([
+            order.order_number,
+            order.full_name(),
+            order.phone,
+            order.email,
+            order.grand_total,
+            order.status,
+            order.created_at.strftime("%Y-%m-%d"),
+        ])
+
+    return response
+
+@login_required(login_url='login')
+def export_orders_excel(request):
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Orders"
+
+    headers = ['Order Number', 'Name', 'Phone', 'Email', 'Total', 'Status', 'Date']
+
+    for col, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col)
+        cell.value = header
+        cell.font = Font(bold=True)
+
+    orders = Order.objects.filter(is_ordered=True)
+
+    row = 2
+    for order in orders:
+        ws.cell(row=row, column=1).value = order.order_number
+        ws.cell(row=row, column=2).value = order.full_name()
+        ws.cell(row=row, column=3).value = order.phone
+        ws.cell(row=row, column=4).value = order.email
+        ws.cell(row=row, column=5).value = float(order.grand_total)
+        ws.cell(row=row, column=6).value = order.status
+        ws.cell(row=row, column=7).value = order.created_at.strftime("%Y-%m-%d")
+        row += 1
+
+    response = HttpResponse(content_type='application/ms-excel')
+    response['Content-Disposition'] = 'attachment; filename="orders.xlsx"'
+    wb.save(response)
+    return response
+def dashboard_page(request):
+    return render(request, "dashboard.html")
+
+
+@login_required(login_url='login')
+def dashboard_stats(request):
+
+    # MONTHLY SALES
+    monthly_sales = (
+        Order.objects.filter(is_ordered=True)
+        .annotate(month=TruncMonth('created_at'))
+        .values('month')
+        .annotate(total=Sum('grand_total'))
+        .order_by('month')
+    )
+
+    months = [item['month'].strftime("%b %Y") for item in monthly_sales]
+    totals = [float(item['total']) for item in monthly_sales]
+
+    # ORDER COUNT CHART
+    monthly_orders = (
+        Order.objects.filter(is_ordered=True)
+        .annotate(month=TruncMonth('created_at'))
+        .values('month')
+        .annotate(count=Count('id'))
+    )
+
+    order_counts = [item['count'] for item in monthly_orders]
+
+    context = {
+        "months": months,
+        "totals": totals,
+        "order_counts": order_counts,
+    }
+
+    return render(request, "order/dashboard_stats.html", context)
+
+def order_api(request):
+    orders = Order.objects.filter(is_ordered=True).values('order_number', 'status')
+    return JsonResponse({'orders': list(orders)})
+from django.utils.timezone import now, timedelta
+
+#creating.api
+
+def api_orders(request):
+    orders = Order.objects.filter(is_ordered=True).order_by("-created_at").values(
+        "order_number", "status", "grand_total", "created_at"
+    )
+    return JsonResponse({"orders": list(orders)})
+
+
+def api_stats(request):
+    today = now().date()
+
+    stats = {
+        "total_orders": Order.objects.filter(is_ordered=True).count(),
+        "todays_orders": Order.objects.filter(created_at__date=today).count(),
+        "total_revenue": float(Order.objects.filter(is_ordered=True).aggregate(Sum("grand_total"))["grand_total__sum"] or 0),
+        "todays_revenue": float(Order.objects.filter(created_at__date=today).aggregate(Sum("grand_total"))["grand_total__sum"] or 0),
+        "status_breakdown": list(
+            Order.objects.filter(is_ordered=True)
+            .values("status")
+            .annotate(count=Count("id"))
+        ),
+    }
+
+    return JsonResponse(stats)
+
+@login_required
+def dashboard_summary(request):
+    user = request.user
+    today = now().date()
+
+    data = {
+        "total_orders": Order.objects.filter(user=user, is_ordered=True).count(),
+        "pending_orders": Order.objects.filter(user=user, status="New", is_ordered=True).count(),
+        "accepted_orders": Order.objects.filter(user=user, status="Accepted", is_ordered=True).count(),
+        "completed_orders": Order.objects.filter(user=user, status="Completed", is_ordered=True).count(),
+        "cancelled_orders": Order.objects.filter(user=user, status="Cancelled", is_ordered=True).count(),
+        "refunded_orders": Order.objects.filter(user=user, status="Refunded", is_ordered=True).count(),
+
+        "today_orders": Order.objects.filter(user=user, created_at__date=today, is_ordered=True).count(),
+
+        "total_spent": float(
+            Order.objects.filter(user=user, is_ordered=True).aggregate(Sum("grand_total"))["grand_total__sum"] or 0
+        ),
+    }
+
+    return JsonResponse(data)
+
+
+def api_dashboard_extra(request):
+
+    # LAST 10 ORDERS
+    last_orders = list(
+        Order.objects.filter(is_ordered=True)
+        .order_by("-created_at")[:10]
+        .values(
+            "order_number",
+            "first_name",
+            "last_name",
+            "status",
+            "grand_total",
+            "created_at"
+        )
+    )
+
+    # TOP SELLING PRODUCTS
+    top_products = list(
+        OrderProduct.objects
+        .values("product__product_name")
+        .annotate(total_qty=Sum("quantity"))
+        .order_by("-total_qty")[:5]
+    )
+
+    # TOP CUSTOMERS
+    top_customers = list(
+        Order.objects.filter(is_ordered=True)
+        .values("user__first_name", "user__email")
+        .annotate(total_spent=Sum("grand_total"))
+        .order_by("-total_spent")[:5]
+    )
+
+    return JsonResponse({
+        "last_orders": last_orders,
+        "top_products": top_products,
+        "top_customers": top_customers
+    })

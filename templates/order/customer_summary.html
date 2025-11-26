@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+
+    <h2>Customer Summary: {{ customer.first_name }} {{ customer.last_name }}</h2>
+    <hr>
+
+    <div class="row">
+
+        <div class="col-md-3">
+            <div class="card p-3 bg-info text-white">
+                <h4>Total Orders</h4>
+                <h3>{{ total_orders }}</h3>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card p-3 bg-success text-white">
+                <h4>Total Spent</h4>
+                <h3>{{ total_spent }} ৳</h3>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card p-3 bg-primary text-white">
+                <h4>Avg Order</h4>
+                <h3>{{ avg_order_value|floatformat:2 }} ৳</h3>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card p-3 bg-warning text-white">
+                <h4>Last Order</h4>
+                <h5>
+                    {% if last_order %}
+                        {{ last_order.created_at|date:"d M, Y" }}
+                    {% else %}
+                        No Orders
+                    {% endif %}
+                </h5>
+            </div>
+        </div>
+
+    </div>
+
+    <h3 class="mt-4">Top Purchased Products</h3>
+    <ul>
+        {% for item in top_products %}
+        <li>{{ item.product__product_name }} — {{ item.total_qty }} pcs</li>
+        {% endfor %}
+    </ul>
+
+    <h3 class="mt-4">Order History</h3>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Order #</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for o in orders %}
+            <tr>
+                <td>{{ o.order_number }}</td>
+                <td>{{ o.grand_total }} ৳</td>
+                <td>{{ o.status }}</td>
+                <td>{{ o.created_at|date:"d M, Y" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+{% endblock %}

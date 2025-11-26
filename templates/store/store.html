@@ -128,118 +128,61 @@ aside .card {
   </div>
 </section>
 
+
 <section class="section-content padding-y">
   <div class="container">
     <div class="row">
 
       <!-- LEFT FILTER PANEL -->
       <aside class="col-md-3">
-        <div class="card">
+        <div class="filter-box">
 
           <!-- Category Filter -->
-          <article class="filter-group">
-            <header class="card-header">
-              <a data-toggle="collapse" data-target="#collapse_1">
-                <i class="icon-control fa fa-chevron-down"></i>
-                <h6 class="title">Categories</h6>
-              </a>
-            </header>
-            <div class="filter-content collapse show" id="collapse_1">
-              <div class="card-body">
-                <ul class="list-menu">
-                  <li><a href="{% url 'store' %}">All Products</a></li>
-                  {% for category in links %}
-                    <li><a href="{{ category.get_url }}">{{ category.category_name }}</a></li>
-                  {% endfor %}
-                </ul>
-              </div>
-            </div>
-          </article>
+          <div class="filter-title">Categories</div>
+          <ul class="list-unstyled">
+            <li><a href="{% url 'store' %}" class="text-orange-600">All Products</a></li>
+            {% for category in links %}
+              <li><a href="{{ category.get_url }}" class="text-orange-600">{{ category.category_name }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
 
-          <!-- Size Filter -->
-          <article class="filter-group">
-            <header class="card-header">
-              <a data-toggle="collapse" data-target="#collapse_size">
-                <i class="icon-control fa fa-chevron-down"></i>
-                <h6 class="title">Sizes</h6>
-              </a>
-            </header>
-            <div class="filter-content collapse show" id="collapse_size">
-              <div class="card-body">
-                {% for size in available_sizes %}
-                <label class="checkbox-btn">
-                  <input type="checkbox"
-                    onclick="window.location='?size={{ size }}{% if selected_color %}&color={{ selected_color }}{% endif %}{% if selected_min_price %}&min_price={{ selected_min_price }}{% endif %}{% if selected_max_price %}&max_price={{ selected_max_price }}{% endif %}'"
-                    {% if selected_size == size %} checked {% endif %}>
-                  <span class="btn btn-light">{{ size }}</span>
-                </label>
-                {% endfor %}
-              </div>
+        <!-- Size Filter -->
+        <div class="filter-box">
+          <div class="filter-title">Sizes</div>
+          {% for size in available_sizes %}
+            <div class="filter-check mb-2">
+              <label>
+                <input type="checkbox" onclick="applyFilter('size','{{ size }}')" {% if selected_size == size %}checked{% endif %}> {{ size }}
+              </label>
             </div>
-          </article>
+          {% endfor %}      
+        </div>
 
-          <!-- Color Filter -->
-          <article class="filter-group">
-            <header class="card-header">
-              <a data-toggle="collapse" data-target="#collapse_color">
-                <i class="icon-control fa fa-chevron-down"></i>
-                <h6 class="title">Colors</h6>
-              </a>
-            </header>
-            <div class="filter-content collapse show" id="collapse_color">
-              <div class="card-body">
-                {% for color in available_colors %}
-                <label class="checkbox-btn">
-                  <input type="checkbox"
-                    onclick="window.location='?color={{ color }}{% if selected_size %}&size={{ selected_size }}{% endif %}{% if selected_min_price %}&min_price={{ selected_min_price }}{% endif %}{% if selected_max_price %}&max_price={{ selected_max_price }}{% endif %}'"
-                    {% if selected_color == color %} checked {% endif %}>
-                  <span class="btn btn-light">{{ color }}</span>
-                </label>
-                {% endfor %}
-              </div>
+        <!-- Color Filter -->
+        <div class="filter-box">
+          <div class="filter-title">Colors</div>
+          {% for color in available_colors %}
+            <div class="filter-check mb-2">
+              <label>
+                <input type="checkbox" onclick="applyFilter('color','{{ color }}')" {% if selected_color == color %}checked{% endif %}> {{ color }}
+              </label>
             </div>
-          </article>
+          {% endfor %}
+        </div>
 
           <!-- Price Filter -->
-          <article class="filter-group">
-            <header class="card-header">
-              <a data-toggle="collapse" data-target="#collapse_3">
-                <i class="icon-control fa fa-chevron-down"></i>
-                <h6 class="title">Price Range</h6>
-              </a>
-            </header>
-
-            <div class="filter-content collapse show" id="collapse_3">
-              <div class="card-body">
-                <form method="GET">
-                  <div class="form-row">
-                    <div class="col-md-6">
-                      <label>Min</label>
-                      <input type="number" class="form-control" name="min_price"
-                        min="{{ price_min }}" max="{{ price_max }}"
-                        value="{{ selected_min_price }}">
-                    </div>
-                    <div class="col-md-6">
-                      <label>Max</label>
-                      <input type="number" class="form-control" name="max_price"
-                        min="{{ price_min }}" max="{{ price_max }}"
-                        value="{{ selected_max_price }}">
-                    </div>
-                  </div>
-
-                  {% if selected_size %}
-                    <input type="hidden" name="size" value="{{ selected_size }}">
-                  {% endif %}
-                  {% if selected_color %}
-                    <input type="hidden" name="color" value="{{ selected_color }}">
-                  {% endif %}
-
-                  <button class="btn btn-block btn-primary mt-3">Apply</button>
-                </form>
-              </div>
-            </div>
-          </article>
-
+        <div class="filter-box">
+          <div class="filter-title">Price Range</div>
+          <form method="GET">
+            <label>Min</label>
+            <input type="number" class="form-control mb-2" name="min_price" value="{{ selected_min_price }}" min="{{ price_min }}" max="{{ price_max }}">
+            <label>Max</label>
+            <input type="number" class="form-control mb-3" name="max_price" value="{{ selected_max_price }}" min="{{ price_min }}" max="{{ price_max }}">
+            {% if selected_size %}<input type="hidden" name="size" value="{{ selected_size }}">{% endif %}
+            {% if selected_color %}<input type="hidden" name="color" value="{{ selected_color }}">{% endif %}
+            <button class="btn-orange w-100">Apply</button>
+          </form>
         </div>
       </aside>
 
@@ -268,7 +211,7 @@ aside .card {
                     </div>
                   </div>
                   <a href="{{ product.get_url }}" class="btn btn-block btn-primary">View Details</a>
-                  <!-- ⭐ Add to Cart + Wishlist Button (Insert Here) -->
+                  <!-- Add to Cart + Wishlist Button (Insert Here) -->
                   <div class="flex justify-between items-center mt-2">
                     <a href="{% url 'add_cart' product.id %}" class="bg-orange-600 hover:bg-orange-700 text-white text-sm px-4 py-1 rounded-full">Add</a>
                     <!-- Add to Wishlist -->
@@ -311,5 +254,21 @@ aside .card {
     </div>
   </div>
 </section>
+<script>
+  function applyFilter(type, value) {
+    let baseUrl = window.location.pathname;
+    let params = new URLSearchParams(window.location.search);
+
+
+    if (params.get(type) === value) {
+    params.delete(type);
+    } else {
+    params.set(type, value);
+    }
+
+
+    window.location = baseUrl + '?' + params.toString();
+  }
+</script>
 
 {% endblock %}

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+  <style>
+
+    .invoice-btn {
+        position: relative;
+        min-width: 110px;
+    }
+
+    .loader {
+        font-size: 12px;
+        color: #fff;
+    }
+  </style>
+  <div class="container mt-4">
+    <h2 class="mb-3">All Orders</h2>
+    <div class="card">
+         <div class="card-body p-0">
+            <table class="table table-striped table-bordered mb-0">
+
+                <thead class="bg-dark text-white">
+                    <tr>
+                        <th>#</th>
+                        <th>Order Number</th>
+                        <th>Name</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th class="text-center">Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                      <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ order.order_number }}</td>
+                        <td>{{ order.full_name }}</td>
+                        <td>{{ order.grand_total }} TK</td>
+                        <td>
+                            {% if order.status == "Accepted" %}
+                              <span class="badge bg-success">Accepted</span>
+                            {% elif order.status == "New" %}
+                              <span class="badge bg-primary">New</span>
+                            {% elif order.status == "Completed" %}
+                              <span class="badge bg-info">Completed</span>
+                            {% elif order.status == "Cancelled" %}
+                              <span class="badge bg-danger">Cancelled</span>
+                            {% elif order.status == "Refunded" %}
+                              <span class="badge bg-warning">Refunded</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ order.created_at|date:"d M Y, h:i A" }}</td> 
+                        <td class="text-center">
+                          <a href="{% url 'manage_order_edit' order.order_number %}" class="btn btn-sm btn-primary">View</a>
+                          <a href="{% url 'download_invoice' order.order_number %}"
+                            class="btn btn-sm btn-success invoice-btn">
+                            <span class="btn-text">Invoice</span>
+                            <span class="loader" style="display:none;">⏳ Generating...</span>
+                          </a>
+
+                        </td>
+                      </tr>
+                    {% empty %}
+                      <tr>
+                        <td colspan="7" class="text-center text-muted">No Orders Found</td>
+                      </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <!-- Pagination -->
+            <div class="p-3">
+                <nav>
+                    <ul class="pagination justify-content-center">
+                        {% if orders.has_previous %}
+                          <li class="page-item">
+                            <a class="page-link" href="?page={{ orders.previous_page_number }}">Previous</a>
+                          </li>                           
+                        {% endif %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ orders.number }}</span>
+                        </li>
+                        {% if orders.has_next %}
+                          <li class="page-item">
+                            <a class="page-link" href="?page={{ orders.next_page_number }}">Next</a>
+                          </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+
+         </div>
+    </div>
+  </div>
+  <script>
+    
+    document.querySelectorAll(".invoice-btn").forEach(btn => {
+        btn.addEventListener("click", function () {
+            let text = this.querySelector(".btn-text");
+            let loader = this.querySelector(".loader");
+
+            text.style.display = "none";
+            loader.style.display = "inline";
+        });
+    });
+  </script>
+
+  
+{% endblock %}
